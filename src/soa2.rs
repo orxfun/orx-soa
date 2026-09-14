@@ -1,257 +1,234 @@
+use alloc::{vec, vec::Vec};
 use orx_parallel::collectables::{ColAndPos, IdxLen, ParExtendCore, ThBegLen};
 use orx_priority_queue::{BinaryHeap, PriorityQueue};
-use std::vec;
 
-pub struct Typ2 {
-    id: u32,
-    c: char,
+pub struct Soa2<T1, T2> {
+    v1: Vec<T1>,
+    v2: Vec<T2>,
 }
 
-#[derive(Clone, Copy)]
-pub struct Typ2Ptr {
-    pub id: *const u32,
-    pub c: *const char,
+pub struct Ptr2<T1, T2> {
+    p1: *const T1,
+    p2: *const T2,
 }
 
-impl Typ2Ptr {
+impl<T1, T2> Clone for Ptr2<T1, T2> {
+    fn clone(&self) -> Self {
+        Self {
+            p1: self.p1,
+            p2: self.p2,
+        }
+    }
+}
+
+impl<T1, T2> Copy for Ptr2<T1, T2> {}
+
+impl<T1, T2> Ptr2<T1, T2> {
     pub unsafe fn add(self, count: usize) -> Self {
         Self {
-            id: unsafe { self.id.add(count) },
-            c: unsafe { self.c.add(count) },
+            p1: unsafe { self.p1.add(count) },
+            p2: unsafe { self.p2.add(count) },
         }
     }
 }
 
-#[derive(Clone, Copy)]
-pub struct Typ2MutPtr {
-    pub id: *mut u32,
-    pub c: *mut char,
+pub struct PtrMut2<T1, T2> {
+    p1: *mut T1,
+    p2: *mut T2,
 }
 
-impl Typ2MutPtr {
+impl<T1, T2> Clone for PtrMut2<T1, T2> {
+    fn clone(&self) -> Self {
+        Self {
+            p1: self.p1,
+            p2: self.p2,
+        }
+    }
+}
+
+impl<T1, T2> Copy for PtrMut2<T1, T2> {}
+
+impl<T1, T2> PtrMut2<T1, T2> {
     pub unsafe fn add(self, count: usize) -> Self {
         Self {
-            id: unsafe { self.id.add(count) },
-            c: unsafe { self.c.add(count) },
+            p1: unsafe { self.p1.add(count) },
+            p2: unsafe { self.p2.add(count) },
         }
     }
 
-    pub unsafe fn copy_from_nonoverlapping(self, src: Typ2Ptr, count: usize) {
-        unsafe { self.id.copy_from_nonoverlapping(src.id, count) };
-        unsafe { self.c.copy_from_nonoverlapping(src.c, count) };
+    pub unsafe fn copy_from_nonoverlapping(self, src: Ptr2<T1, T2>, count: usize) {
+        unsafe { self.p1.copy_from_nonoverlapping(src.p1, count) };
+        unsafe { self.p2.copy_from_nonoverlapping(src.p2, count) };
     }
 }
 
-pub struct Typ2Vec {
-    id: Vec<u32>,
-    c: Vec<char>,
-}
-
-impl Typ2Vec {
-    // ctor & dtor
-
-    pub fn new() -> Self {
-        Self {
-            id: Vec::new(),
-            c: Vec::new(),
-        }
-    }
-
-    pub fn with_capacity(capacity: usize) -> Self {
-        Self {
-            id: Vec::with_capacity(capacity),
-            c: Vec::with_capacity(capacity),
-        }
-    }
-
-    pub fn into_inner(self) -> (Vec<u32>, Vec<char>) {
-        (self.id, self.c)
-    }
-
-    // get
-
-    pub fn len(&self) -> usize {
-        self.id.len()
-    }
-
-    pub fn is_empty(&self) -> bool {
-        self.id.is_empty()
-    }
-
-    pub fn id(&self) -> &[u32] {
-        &self.id
-    }
-
-    pub fn c(&self) -> &[char] {
-        &self.c
-    }
-
-    pub fn as_ptr(&self) -> Typ2Ptr {
-        Typ2Ptr {
-            id: self.id.as_ptr(),
-            c: self.c.as_ptr(),
-        }
-    }
-
-    // mut
-
-    pub fn push(&mut self, item: Typ2) {
-        self.id.push(item.id);
-        self.c.push(item.c);
-    }
-
-    pub fn as_mut_ptr(&mut self) -> Typ2MutPtr {
-        Typ2MutPtr {
-            id: self.id.as_mut_ptr(),
-            c: self.c.as_mut_ptr(),
-        }
-    }
-
-    pub fn id_mut(&mut self) -> &mut [u32] {
-        &mut self.id
-    }
-
-    pub fn c_mut(&mut self) -> &mut [char] {
-        &mut self.c
-    }
-
-    pub fn reserve(&mut self, additional: usize) {
-        self.id.reserve(additional);
-        self.c.reserve(additional);
-    }
-
-    pub unsafe fn set_len(&mut self, new_len: usize) {
-        unsafe { self.id.set_len(new_len) };
-        unsafe { self.c.set_len(new_len) };
-    }
-}
-
-impl Default for Typ2Vec {
+impl<T1, T2> Default for Soa2<T1, T2> {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl From<Typ2Vec> for (Vec<u32>, Vec<char>) {
-    fn from(value: Typ2Vec) -> Self {
-        (value.id, value.c)
+impl<T1, T2> Soa2<T1, T2> {
+    pub fn new() -> Self {
+        Self {
+            v1: Default::default(),
+            v2: Default::default(),
+        }
+    }
+
+    pub fn with_capacity(capacity: usize) -> Self {
+        Self {
+            v1: Vec::with_capacity(capacity),
+            v2: Vec::with_capacity(capacity),
+        }
+    }
+
+    pub fn len(&self) -> usize {
+        self.v1.len()
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.v1.is_empty()
+    }
+
+    pub fn into_inner(self) -> (Vec<T1>, Vec<T2>) {
+        (self.v1, self.v2)
+    }
+
+    pub fn as_ptr(&self) -> Ptr2<T1, T2> {
+        Ptr2 {
+            p1: self.v1.as_ptr(),
+            p2: self.v2.as_ptr(),
+        }
+    }
+
+    pub fn get(&self, index: usize) -> Option<ElemRef2<'_, T1, T2>> {
+        self.v1.get(index).map(|v1| {
+            let v2 = &self.v2[index];
+            ElemRef2 { v1, v2 }
+        })
+    }
+
+    pub fn get_mut(&mut self, index: usize) -> Option<ElemMut2<'_, T1, T2>> {
+        self.v1.get_mut(index).map(|v1| {
+            let v2 = &mut self.v2[index];
+            ElemMut2 { v1, v2 }
+        })
+    }
+
+    pub fn push(&mut self, (v1, v2): (T1, T2)) {
+        self.v1.push(v1);
+        self.v2.push(v2);
+    }
+
+    pub fn as_mut_ptr(&mut self) -> PtrMut2<T1, T2> {
+        PtrMut2 {
+            p1: self.v1.as_mut_ptr(),
+            p2: self.v2.as_mut_ptr(),
+        }
+    }
+
+    pub fn reserve(&mut self, additional: usize) {
+        self.v1.reserve(additional);
+        self.v2.reserve(additional);
+    }
+
+    pub unsafe fn set_len(&mut self, new_len: usize) {
+        unsafe { self.v1.set_len(new_len) };
+        unsafe { self.v2.set_len(new_len) };
     }
 }
 
-impl Extend<Typ2> for Typ2Vec {
-    fn extend<I: IntoIterator<Item = Typ2>>(&mut self, iter: I) {
+impl<T1, T2> From<Soa2<T1, T2>> for (Vec<T1>, Vec<T2>) {
+    fn from(value: Soa2<T1, T2>) -> Self {
+        (value.v1, value.v2)
+    }
+}
+
+impl<T1, T2> Extend<(T1, T2)> for Soa2<T1, T2> {
+    fn extend<I: IntoIterator<Item = (T1, T2)>>(&mut self, iter: I) {
         for x in iter {
-            self.id.push(x.id);
-            self.c.push(x.c);
+            self.push(x);
         }
     }
 }
 
-// iterators
-
-pub struct Typ2Iter {
-    id: vec::IntoIter<u32>,
-    c: vec::IntoIter<char>,
+pub struct Soa2Iter<T1, T2> {
+    i1: vec::IntoIter<T1>,
+    i2: vec::IntoIter<T2>,
 }
 
-impl Iterator for Typ2Iter {
-    type Item = Typ2;
+impl<T1, T2> Iterator for Soa2Iter<T1, T2> {
+    type Item = (T1, T2);
 
     fn next(&mut self) -> Option<Self::Item> {
-        self.id.next().map(|id| {
-            // SAFETY: `id` and `c` has exactly same length
-            let c = unsafe { self.c.next().unwrap_unchecked() };
-            Typ2 { id, c }
+        self.i1.next().map(|v1| {
+            let v2 = unsafe { self.i2.next().unwrap_unchecked() };
+            (v1, v2)
         })
     }
 }
 
-impl IntoIterator for Typ2Vec {
-    type Item = Typ2;
+impl<T1, T2> IntoIterator for Soa2<T1, T2> {
+    type Item = (T1, T2);
 
-    type IntoIter = Typ2Iter;
+    type IntoIter = Soa2Iter<T1, T2>;
 
     fn into_iter(self) -> Self::IntoIter {
-        Typ2Iter {
-            id: self.id.into_iter(),
-            c: self.c.into_iter(),
+        Soa2Iter {
+            i1: self.v1.into_iter(),
+            i2: self.v2.into_iter(),
         }
     }
 }
 
-pub struct Typ2Ref<'a> {
-    pub id: &'a u32,
-    pub c: &'a char,
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+pub struct ElemRef2<'a, T1, T2> {
+    pub v1: &'a T1,
+    pub v2: &'a T2,
 }
 
-pub struct Typ2IterRef<'a> {
-    id: core::slice::Iter<'a, u32>,
-    c: core::slice::Iter<'a, char>,
+pub struct Soa2IterRef<'a, T1, T2> {
+    i1: core::slice::Iter<'a, T1>,
+    i2: core::slice::Iter<'a, T2>,
 }
 
-impl<'a> Iterator for Typ2IterRef<'a> {
-    type Item = Typ2Ref<'a>;
+impl<'a, T1, T2> Iterator for Soa2IterRef<'a, T1, T2> {
+    type Item = ElemRef2<'a, T1, T2>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        self.id.next().map(|id| {
-            // SAFETY: `id` and `c` has exactly same length
-            let c = unsafe { self.c.next().unwrap_unchecked() };
-            Typ2Ref { id, c }
+        self.i1.next().map(|v1| {
+            let v2 = unsafe { self.i2.next().unwrap_unchecked() };
+            ElemRef2 { v1, v2 }
         })
     }
 }
 
-impl<'a> IntoIterator for &'a Typ2Vec {
-    type Item = Typ2Ref<'a>;
-
-    type IntoIter = Typ2IterRef<'a>;
-
-    fn into_iter(self) -> Self::IntoIter {
-        Typ2IterRef {
-            id: self.id.iter(),
-            c: self.c.iter(),
-        }
-    }
+#[derive(PartialEq, Eq, Debug)]
+pub struct ElemMut2<'a, T1, T2> {
+    pub v1: &'a mut T1,
+    pub v2: &'a mut T2,
 }
 
-pub struct Typ2Mut<'a> {
-    pub id: &'a mut u32,
-    pub c: &'a mut char,
+pub struct Soa2IterMut<'a, T1, T2> {
+    i1: core::slice::IterMut<'a, T1>,
+    i2: core::slice::IterMut<'a, T2>,
 }
 
-pub struct Typ2IterMut<'a> {
-    id: core::slice::IterMut<'a, u32>,
-    c: core::slice::IterMut<'a, char>,
-}
-
-impl<'a> Iterator for Typ2IterMut<'a> {
-    type Item = Typ2Mut<'a>;
+impl<'a, T1, T2> Iterator for Soa2IterMut<'a, T1, T2> {
+    type Item = ElemMut2<'a, T1, T2>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        self.id.next().map(|id| {
-            // SAFETY: `id` and `c` has exactly same length
-            let c = unsafe { self.c.next().unwrap_unchecked() };
-            Typ2Mut { id, c }
+        self.i1.next().map(|v1| {
+            let v2 = unsafe { self.i2.next().unwrap_unchecked() };
+            ElemMut2 { v1, v2 }
         })
-    }
-}
-
-impl<'a> IntoIterator for &'a mut Typ2Vec {
-    type Item = Typ2Mut<'a>;
-
-    type IntoIter = Typ2IterMut<'a>;
-
-    fn into_iter(self) -> Self::IntoIter {
-        Typ2IterMut {
-            id: self.id.iter_mut(),
-            c: self.c.iter_mut(),
-        }
     }
 }
 
 // parallel
 
-impl ParExtendCore<Typ2> for Typ2Vec {
+impl<T1: Send, T2: Send> ParExtendCore<(T1, T2)> for Soa2<T1, T2> {
     type ThreadValues = Self;
 
     type OrderedThreadValues = ColAndPos<Self>;
@@ -266,13 +243,13 @@ impl ParExtendCore<Typ2> for Typ2Vec {
 
     // thread collect
 
-    fn add_thread_value(collected: &mut Self::ThreadValues, value: Typ2) {
+    fn add_thread_value(collected: &mut Self::ThreadValues, value: (T1, T2)) {
         collected.push(value);
     }
 
     fn add_thread_values(
         collected: &mut Self::ThreadValues,
-        values: impl IntoIterator<Item = Typ2>,
+        values: impl IntoIterator<Item = (T1, T2)>,
     ) {
         collected.extend(values);
     }
@@ -280,7 +257,7 @@ impl ParExtendCore<Typ2> for Typ2Vec {
     fn add_ordered_thread_value(
         collected: &mut Self::OrderedThreadValues,
         idx: usize,
-        value: Typ2,
+        value: (T1, T2),
     ) {
         collected.values.push(value);
         collected.positions.push(IdxLen { idx, len: 1 });
@@ -289,7 +266,7 @@ impl ParExtendCore<Typ2> for Typ2Vec {
     fn add_ordered_thread_values(
         collected: &mut Self::OrderedThreadValues,
         idx: usize,
-        values: impl IntoIterator<Item = Typ2>,
+        values: impl IntoIterator<Item = (T1, T2)>,
     ) {
         let len_begin = collected.values.len();
         collected.values.extend(values);
@@ -305,7 +282,7 @@ impl ParExtendCore<Typ2> for Typ2Vec {
     fn add_ordered_thread_optionals(
         collected: &mut Self::OrderedThreadValues,
         idx: usize,
-        values: impl IntoIterator<Item = Option<Typ2>>,
+        values: impl IntoIterator<Item = Option<(T1, T2)>>,
     ) -> Option<()> {
         let len_begin = collected.values.len();
         for value in values {
@@ -324,7 +301,7 @@ impl ParExtendCore<Typ2> for Typ2Vec {
     fn add_ordered_thread_fallibles<E>(
         collected: &mut Self::OrderedThreadValues,
         idx: usize,
-        values: impl IntoIterator<Item = Result<Typ2, E>>,
+        values: impl IntoIterator<Item = Result<(T1, T2), E>>,
     ) -> Result<(), E> {
         let len_begin = collected.values.len();
         for value in values {
@@ -341,7 +318,7 @@ impl ParExtendCore<Typ2> for Typ2Vec {
 
     // add
 
-    fn add_one(&mut self, value: Typ2) {
+    fn add_one(&mut self, value: (T1, T2)) {
         self.push(value);
     }
 

@@ -1,7 +1,7 @@
 use orx_parallel::*;
 use orx_soa::*;
 
-#[derive(NamedSoa, PartialEq, Debug)]
+#[derive(Soa, PartialEq, Debug)]
 pub struct Record {
     id: u32,
     ch: char,
@@ -15,31 +15,42 @@ impl Record {
 
 #[test]
 fn named_soa_vec() {
-    let mut vec = RecordVec::new();
-    vec.push(Record::new(0, 'x'));
-    vec.extend([Record::new(1, 'y'), Record::new(2, 'z')]);
+    let mut soa = RecordSoa::new();
+    soa.push(Record::new(0, 'x'));
+    soa.extend([Record::new(1, 'y'), Record::new(2, 'z')]);
 
-    assert_eq!(vec.len(), 3);
-    assert!(!vec.is_empty());
+    let el1: RecordRef<'_> = soa.get(1).unwrap();
+    assert_eq!(el1.id, &1);
+    assert_eq!(el1.ch, &'y');
 
-    vec.id_mut()[0] = 10;
-    vec.ch_mut()[2] = '!';
+    let el2: RecordMut<'_> = soa.get_mut(2).unwrap();
+    *el2.id = 20;
+    *el2.ch = '?';
 
-    assert_eq!(vec.id(), &[10, 1, 2]);
-    assert_eq!(vec.ch(), &['x', 'y', '!']);
+    assert_eq!(soa.get(4), None);
+    assert_eq!(soa.get_mut(5), None);
 
-    let (ids, chars) = vec.into_inner();
-    assert_eq!(ids, vec![10, 1, 2]);
+    assert_eq!(soa.len(), 3);
+    assert!(!soa.is_empty());
+
+    soa.id_mut()[0] = 10;
+    soa.ch_mut()[2] = '!';
+
+    assert_eq!(soa.id(), &[10, 1, 20]);
+    assert_eq!(soa.ch(), &['x', 'y', '!']);
+
+    let (ids, chars) = soa.into_inner();
+    assert_eq!(ids, vec![10, 1, 20]);
     assert_eq!(chars, vec!['x', 'y', '!']);
 }
 
 #[test]
 fn named_soa_into_iter() {
-    let mut vec = RecordVec::new();
-    vec.push(Record::new(0, 'x'));
-    vec.extend([Record::new(1, 'y'), Record::new(2, 'z')]);
+    let mut soa = RecordSoa::new();
+    soa.push(Record::new(0, 'x'));
+    soa.extend([Record::new(1, 'y'), Record::new(2, 'z')]);
 
-    let aos: Vec<Record> = vec.into_iter().collect();
+    let aos: Vec<Record> = soa.into_iter().collect();
     assert_eq!(
         aos,
         vec![
@@ -57,9 +68,9 @@ fn named_soa_par_extend() {
         false => Record::new(i as u32, 'o'),
     });
 
-    let collected: RecordVec = par.collect();
+    let soa: RecordSoa = par.collect();
 
-    let (ids, chars) = collected.into_inner();
+    let (ids, chars) = soa.into_inner();
 
     assert_eq!(ids, vec![0, 1, 2, 3, 4]);
     assert_eq!(chars, vec!['e', 'o', 'e', 'o', 'e']);
