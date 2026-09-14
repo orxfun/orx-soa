@@ -3,6 +3,7 @@ use orx_parallel::collectables::{ColAndPos, IdxLen, ParExtendCore, ThBegLen};
 use orx_priority_queue::{BinaryHeap, PriorityQueue};
 
 /// Struct-of-arrays storage for pairs of values.
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Soa2<T1, T2> {
     v1: Vec<T1>,
     v2: Vec<T2>,
@@ -16,10 +17,7 @@ pub struct Ptr2<T1, T2> {
 
 impl<T1, T2> Clone for Ptr2<T1, T2> {
     fn clone(&self) -> Self {
-        Self {
-            p1: self.p1,
-            p2: self.p2,
-        }
+        *self
     }
 }
 
@@ -48,10 +46,7 @@ pub struct PtrMut2<T1, T2> {
 
 impl<T1, T2> Clone for PtrMut2<T1, T2> {
     fn clone(&self) -> Self {
-        Self {
-            p1: self.p1,
-            p2: self.p2,
-        }
+        *self
     }
 }
 
@@ -119,6 +114,26 @@ impl<T1, T2> Soa2<T1, T2> {
     /// Decomposes the collection into its component vectors.
     pub fn into_inner(self) -> (Vec<T1>, Vec<T2>) {
         (self.v1, self.v2)
+    }
+
+    /// Returns the first component slice.
+    pub fn as_slice1(&self) -> &[T1] {
+        &self.v1
+    }
+
+    /// Returns the second component slice.
+    pub fn as_slice2(&self) -> &[T2] {
+        &self.v2
+    }
+
+    /// Returns a mutable slice of the first component.
+    pub fn as_mut_slice1(&mut self) -> &mut [T1] {
+        &mut self.v1
+    }
+
+    /// Returns a mutable slice of the second component.
+    pub fn as_mut_slice2(&mut self) -> &mut [T2] {
+        &mut self.v2
     }
 
     /// Returns immutable pointers to the component arrays.
@@ -221,7 +236,7 @@ impl<T1, T2> IntoIterator for Soa2<T1, T2> {
     }
 }
 
-#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+#[derive(Clone, Copy, PartialEq, Eq, Debug, derive_new::new)]
 /// Borrowed component references returned by SOA accessors.
 pub struct ElemRef2<'a, T1, T2> {
     /// Reference to the first component.
@@ -247,7 +262,7 @@ impl<'a, T1, T2> Iterator for Soa2IterRef<'a, T1, T2> {
     }
 }
 
-#[derive(PartialEq, Eq, Debug)]
+#[derive(PartialEq, Eq, Debug, derive_new::new)]
 /// Mutable component references returned by SOA accessors.
 pub struct ElemMut2<'a, T1, T2> {
     /// Mutable reference to the first component.
