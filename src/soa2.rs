@@ -2,11 +2,13 @@ use alloc::{vec, vec::Vec};
 use orx_parallel::collectables::{ColAndPos, IdxLen, ParExtendCore, ThBegLen};
 use orx_priority_queue::{BinaryHeap, PriorityQueue};
 
+/// Struct-of-arrays storage for pairs of values.
 pub struct Soa2<T1, T2> {
     v1: Vec<T1>,
     v2: Vec<T2>,
 }
 
+/// A pair of immutable pointers to the component arrays.
 pub struct Ptr2<T1, T2> {
     p1: *const T1,
     p2: *const T2,
@@ -24,6 +26,12 @@ impl<T1, T2> Clone for Ptr2<T1, T2> {
 impl<T1, T2> Copy for Ptr2<T1, T2> {}
 
 impl<T1, T2> Ptr2<T1, T2> {
+    /// Advances both pointers by `count` elements.
+    ///
+    /// # Safety
+    ///
+    /// The resulting pointers must remain within, or one past, their respective
+    /// allocated arrays.
     pub unsafe fn add(self, count: usize) -> Self {
         Self {
             p1: unsafe { self.p1.add(count) },
@@ -32,6 +40,7 @@ impl<T1, T2> Ptr2<T1, T2> {
     }
 }
 
+/// A pair of mutable pointers to the component arrays.
 pub struct PtrMut2<T1, T2> {
     p1: *mut T1,
     p2: *mut T2,
@@ -49,6 +58,12 @@ impl<T1, T2> Clone for PtrMut2<T1, T2> {
 impl<T1, T2> Copy for PtrMut2<T1, T2> {}
 
 impl<T1, T2> PtrMut2<T1, T2> {
+    /// Advances both pointers by `count` elements.
+    ///
+    /// # Safety
+    ///
+    /// The resulting pointers must remain within, or one past, their respective
+    /// allocated arrays.
     pub unsafe fn add(self, count: usize) -> Self {
         Self {
             p1: unsafe { self.p1.add(count) },
@@ -56,6 +71,12 @@ impl<T1, T2> PtrMut2<T1, T2> {
         }
     }
 
+    /// Copies `count` pairs from `src` into these destination pointers.
+    ///
+    /// # Safety
+    ///
+    /// Both regions must be valid for reads and writes of `count` elements and
+    /// must not overlap.
     pub unsafe fn copy_from_nonoverlapping(self, src: Ptr2<T1, T2>, count: usize) {
         unsafe { self.p1.copy_from_nonoverlapping(src.p1, count) };
         unsafe { self.p2.copy_from_nonoverlapping(src.p2, count) };
@@ -69,6 +90,7 @@ impl<T1, T2> Default for Soa2<T1, T2> {
 }
 
 impl<T1, T2> Soa2<T1, T2> {
+    /// Creates an empty collection.
     pub fn new() -> Self {
         Self {
             v1: Default::default(),
@@ -76,6 +98,7 @@ impl<T1, T2> Soa2<T1, T2> {
         }
     }
 
+    /// Creates an empty collection with space for at least `capacity` pairs.
     pub fn with_capacity(capacity: usize) -> Self {
         Self {
             v1: Vec::with_capacity(capacity),
@@ -83,18 +106,22 @@ impl<T1, T2> Soa2<T1, T2> {
         }
     }
 
+    /// Returns the number of stored pairs.
     pub fn len(&self) -> usize {
         self.v1.len()
     }
 
+    /// Returns whether the collection contains no pairs.
     pub fn is_empty(&self) -> bool {
         self.v1.is_empty()
     }
 
+    /// Decomposes the collection into its component vectors.
     pub fn into_inner(self) -> (Vec<T1>, Vec<T2>) {
         (self.v1, self.v2)
     }
 
+    /// Returns immutable pointers to the component arrays.
     pub fn as_ptr(&self) -> Ptr2<T1, T2> {
         Ptr2 {
             p1: self.v1.as_ptr(),
@@ -102,6 +129,7 @@ impl<T1, T2> Soa2<T1, T2> {
         }
     }
 
+    /// Returns the pair at `index` as borrowed component references.
     pub fn get(&self, index: usize) -> Option<ElemRef2<'_, T1, T2>> {
         self.v1.get(index).map(|v1| {
             let v2 = &self.v2[index];
@@ -109,6 +137,7 @@ impl<T1, T2> Soa2<T1, T2> {
         })
     }
 
+    /// Returns the pair at `index` as mutable component references.
     pub fn get_mut(&mut self, index: usize) -> Option<ElemMut2<'_, T1, T2>> {
         self.v1.get_mut(index).map(|v1| {
             let v2 = &mut self.v2[index];
@@ -116,11 +145,13 @@ impl<T1, T2> Soa2<T1, T2> {
         })
     }
 
+    /// Appends a pair to the collection.
     pub fn push(&mut self, (v1, v2): (T1, T2)) {
         self.v1.push(v1);
         self.v2.push(v2);
     }
 
+    /// Returns mutable pointers to the component arrays.
     pub fn as_mut_ptr(&mut self) -> PtrMut2<T1, T2> {
         PtrMut2 {
             p1: self.v1.as_mut_ptr(),
@@ -128,11 +159,18 @@ impl<T1, T2> Soa2<T1, T2> {
         }
     }
 
+    /// Reserves capacity for at least `additional` more pairs.
     pub fn reserve(&mut self, additional: usize) {
         self.v1.reserve(additional);
         self.v2.reserve(additional);
     }
 
+    /// Sets the number of stored pairs without initializing or dropping values.
+    ///
+    /// # Safety
+    ///
+    /// The new length must not exceed the capacity, and all newly exposed
+    /// elements must be initialized in both component arrays.
     pub unsafe fn set_len(&mut self, new_len: usize) {
         unsafe { self.v1.set_len(new_len) };
         unsafe { self.v2.set_len(new_len) };
@@ -153,6 +191,7 @@ impl<T1, T2> Extend<(T1, T2)> for Soa2<T1, T2> {
     }
 }
 
+/// Owning iterator over the pairs in a `Soa2` collection.
 pub struct Soa2Iter<T1, T2> {
     i1: vec::IntoIter<T1>,
     i2: vec::IntoIter<T2>,
@@ -183,11 +222,15 @@ impl<T1, T2> IntoIterator for Soa2<T1, T2> {
 }
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
+/// Borrowed component references returned by SOA accessors.
 pub struct ElemRef2<'a, T1, T2> {
+    /// Reference to the first component.
     pub v1: &'a T1,
+    /// Reference to the second component.
     pub v2: &'a T2,
 }
 
+/// Iterator over borrowed component references.
 pub struct Soa2IterRef<'a, T1, T2> {
     i1: core::slice::Iter<'a, T1>,
     i2: core::slice::Iter<'a, T2>,
@@ -205,11 +248,15 @@ impl<'a, T1, T2> Iterator for Soa2IterRef<'a, T1, T2> {
 }
 
 #[derive(PartialEq, Eq, Debug)]
+/// Mutable component references returned by SOA accessors.
 pub struct ElemMut2<'a, T1, T2> {
+    /// Mutable reference to the first component.
     pub v1: &'a mut T1,
+    /// Mutable reference to the second component.
     pub v2: &'a mut T2,
 }
 
+/// Mutable iterator over the component arrays.
 pub struct Soa2IterMut<'a, T1, T2> {
     i1: core::slice::IterMut<'a, T1>,
     i2: core::slice::IterMut<'a, T2>,
