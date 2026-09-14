@@ -2,7 +2,12 @@
 name = "orx-soa"
 version = "0.1.0"
 edition = "2024"
-publish = ["artifactory"]
+authors = ["orxfun <orx.ugur.arikan@gmail.com>"]
+description = "Struct of arrays collections"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/orxfun/orx-soa/"
+keywords = ["vec", "array", "vector", "soa"]
+categories = ["data-structures", "algorithms", "no-std"]
 
 [dependencies]
 orx-parallel = { git = "https://github.com/orxfun/orx-parallel", branch = "collect-into-soa" }
