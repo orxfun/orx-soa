@@ -211,6 +211,15 @@ version = "0.1.0"
 dependencies = [
  "orx-parallel",
  "orx-priority-queue",
+ "orx-soa-derive",
+]
+
+[[package]]
+name = "orx-soa-derive"
+version = "0.1.0"
+dependencies = [
+ "quote",
+ "syn 2.0.119",
 ]
 
 [[package]]
