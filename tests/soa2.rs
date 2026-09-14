@@ -44,7 +44,7 @@ fn soa2_iterator_and_mutation_views_work() {
     *first.v1 += 100;
     *first.v2 = 'x';
 
-    let mut second = soa.get_mut(1).unwrap();
+    let second = soa.get_mut(1).unwrap();
     *second.v1 += 100;
     *second.v2 = 'x';
 
