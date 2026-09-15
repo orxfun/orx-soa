@@ -228,7 +228,9 @@ dependencies = [
 
 [[package]]
 name = "orx-soa-derive"
-version = "1.1.0"
+version = "1.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "21655915dc490afd572f5fb470ebdbf1962d4d7fa5fa20b8c8a09c2073fefd39"
 dependencies = [
  "quote",
  "syn 2.0.119",
