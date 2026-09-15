@@ -195,12 +195,52 @@ impl<T1, T2> Soa2<T1, T2> {
     where
         T1: Ord,
     {
+        self.sort_by(|a, b| a.v1.cmp(b.v1));
     }
 
     pub fn sort_by2(&mut self)
     where
         T2: Ord,
     {
+        self.sort_by(|a, b| a.v2.cmp(b.v2));
+    }
+
+    fn sort_by<F>(&mut self, mut compare: F)
+    where
+        F: FnMut(ElemRef2<'_, T1, T2>, ElemRef2<'_, T1, T2>) -> core::cmp::Ordering,
+    {
+        let len = self.len();
+        if len <= 1 {
+            return;
+        }
+
+        let mut indices: Vec<usize> = (0..len).collect();
+        indices.sort_by(|&left, &right| {
+            compare(
+                ElemRef2 {
+                    v1: &self.v1[left],
+                    v2: &self.v2[left],
+                },
+                ElemRef2 {
+                    v1: &self.v1[right],
+                    v2: &self.v2[right],
+                },
+            )
+        });
+
+        let mut positions = vec![0; len];
+        for (new_position, old_position) in indices.into_iter().enumerate() {
+            positions[old_position] = new_position;
+        }
+
+        for index in 0..len {
+            while positions[index] != index {
+                let other = positions[index];
+                self.v1.swap(index, other);
+                self.v2.swap(index, other);
+                positions.swap(index, other);
+            }
+        }
     }
 }
 
