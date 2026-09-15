@@ -192,6 +192,21 @@ impl<T1, T2> Soa2<T1, T2> {
         unsafe { self.v2.set_len(new_len) };
     }
 
+    /// Sorts the collection with a custom comparator.
+    ///
+    /// # Examples
+    /// ```
+    /// use orx_soa::soa2::Soa2;
+    ///
+    /// let mut soa = Soa2::new();
+    /// soa.push((2, 'b'));
+    /// soa.push((1, 'a'));
+    ///
+    /// soa.sort_by(|left, right| left.v1.cmp(right.v1));
+    ///
+    /// assert_eq!(soa.as_slice1(), &[1, 2]);
+    /// assert_eq!(soa.as_slice2(), &['a', 'b']);
+    /// ```
     pub fn sort_by<F>(&mut self, mut compare: F)
     where
         F: FnMut(ElemRef2<'_, T1, T2>, ElemRef2<'_, T1, T2>) -> Ordering,
@@ -230,6 +245,21 @@ impl<T1, T2> Soa2<T1, T2> {
         }
     }
 
+    /// Sorts the collection by the first component.
+    ///
+    /// # Examples
+    /// ```
+    /// use orx_soa::soa2::Soa2;
+    ///
+    /// let mut soa = Soa2::new();
+    /// soa.push((2, 'b'));
+    /// soa.push((1, 'a'));
+    ///
+    /// soa.sort_by1();
+    ///
+    /// assert_eq!(soa.as_slice1(), &[1, 2]);
+    /// assert_eq!(soa.as_slice2(), &['a', 'b']);
+    /// ```
     pub fn sort_by1(&mut self)
     where
         T1: Ord,
@@ -237,6 +267,21 @@ impl<T1, T2> Soa2<T1, T2> {
         self.sort_by(|a, b| a.v1.cmp(b.v1));
     }
 
+    /// Sorts the collection by the second component.
+    ///
+    /// # Examples
+    /// ```
+    /// use orx_soa::soa2::Soa2;
+    ///
+    /// let mut soa = Soa2::new();
+    /// soa.push((2, 'b'));
+    /// soa.push((1, 'a'));
+    ///
+    /// soa.sort_by2();
+    ///
+    /// assert_eq!(soa.as_slice1(), &[1, 2]);
+    /// assert_eq!(soa.as_slice2(), &['a', 'b']);
+    /// ```
     pub fn sort_by2(&mut self)
     where
         T2: Ord,
@@ -244,6 +289,21 @@ impl<T1, T2> Soa2<T1, T2> {
         self.sort_by(|a, b| a.v2.cmp(b.v2));
     }
 
+    /// Sorts the collection with a custom comparator using an unstable sort.
+    ///
+    /// # Examples
+    /// ```
+    /// use orx_soa::soa2::Soa2;
+    ///
+    /// let mut soa = Soa2::new();
+    /// soa.push((2, 'b'));
+    /// soa.push((1, 'a'));
+    ///
+    /// soa.sort_by_unstable(|left, right| left.v1.cmp(right.v1));
+    ///
+    /// assert_eq!(soa.as_slice1(), &[1, 2]);
+    /// assert_eq!(soa.as_slice2(), &['a', 'b']);
+    /// ```
     pub fn sort_by_unstable<F>(&mut self, mut compare: F)
     where
         F: FnMut(ElemRef2<'_, T1, T2>, ElemRef2<'_, T1, T2>) -> Ordering,
@@ -312,6 +372,21 @@ impl<T1, T2> Soa2<T1, T2> {
         }
     }
 
+    /// Sorts the collection by the first component using an unstable sort.
+    ///
+    /// # Examples
+    /// ```
+    /// use orx_soa::soa2::Soa2;
+    ///
+    /// let mut soa = Soa2::new();
+    /// soa.push((2, 'b'));
+    /// soa.push((1, 'a'));
+    ///
+    /// soa.sort_unstable_by1();
+    ///
+    /// assert_eq!(soa.as_slice1(), &[1, 2]);
+    /// assert_eq!(soa.as_slice2(), &['a', 'b']);
+    /// ```
     pub fn sort_unstable_by1(&mut self)
     where
         T1: Ord,
@@ -319,6 +394,21 @@ impl<T1, T2> Soa2<T1, T2> {
         self.sort_by_unstable(|a, b| a.v1.cmp(b.v1));
     }
 
+    /// Sorts the collection by the second component using an unstable sort.
+    ///
+    /// # Examples
+    /// ```
+    /// use orx_soa::soa2::Soa2;
+    ///
+    /// let mut soa = Soa2::new();
+    /// soa.push((2, 'b'));
+    /// soa.push((1, 'a'));
+    ///
+    /// soa.sort_unstable_by2();
+    ///
+    /// assert_eq!(soa.as_slice1(), &[1, 2]);
+    /// assert_eq!(soa.as_slice2(), &['a', 'b']);
+    /// ```
     pub fn sort_unstable_by2(&mut self)
     where
         T2: Ord,
