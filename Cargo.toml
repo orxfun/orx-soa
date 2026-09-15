@@ -13,4 +13,4 @@ categories = ["data-structures", "algorithms", "no-std"]
 derive-new = { version = "0.7.0", default-features = false }
 orx-parallel = { git = "https://github.com/orxfun/orx-parallel", branch = "collect-into-soa" }
 orx-priority-queue = { version = "1.9", default-features = false }
-orx-soa-derive = { version = "1.1", default-features = false }
+orx-soa-derive = { version = "1.2", default-features = false }

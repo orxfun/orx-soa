@@ -54,12 +54,8 @@ assert_eq!(soa.ch(), &['a', 'b']);
 assert_eq!(soa.get(0), Some(RecordRef { id: &1, ch: &'a' }));
 assert_eq!(soa.get_mut(1), Some(RecordMut { id: &mut 2, ch: &mut 'b' }));
 
-let aos: Vec<Record> = soa.into_iter().collect();
+let aos: Vec<Record> = soa.clone().into_iter().collect();
 assert_eq!(aos, vec![Record { id: 1, ch: 'a' }, Record { id: 2, ch: 'b' }]);
-
-let mut soa = RecordSoa::new();
-soa.push(Record { id: 1, ch: 'a' });
-soa.push(Record { id: 2, ch: 'b' });
 
 let (ids, chars): (Vec<u32>, Vec<char>) = soa.into_inner();
 assert_eq!(ids, vec![1, 2]);
