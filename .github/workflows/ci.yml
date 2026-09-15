@@ -53,8 +53,22 @@ jobs:
     - name: Clippy
       run: cargo clippy -- -D warnings --verbose
 
-    - name: Miri
-      run: cargo +nightly miri test --verbose
-
     - name: NoStd
       run: cargo +nightly no-std-check
+
+  miri:
+    name: Miri
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install nightly toolchain
+        uses: dtolnay/rust-toolchain@nightly
+
+      - name: Install miri
+        run: rustup component add --toolchain nightly-x86_64-unknown-linux-gnu miri
+
+      - name: Test miri
+        env:
+          MIRIFLAGS: -Zmiri-ignore-leaks
+        run: cargo +nightly miri test --lib --bins --tests --verbose
