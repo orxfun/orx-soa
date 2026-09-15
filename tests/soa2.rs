@@ -84,12 +84,12 @@ fn soa2_sort() {
     let mut soa = Soa2::new();
     soa.extend([(1, 'a'), (0, 'c'), (3, 'b'), (2, 'd')]);
 
-    // soa.sort_by1();
+    soa.sort_by1();
     let mut expected_by1 = Soa2::new();
     expected_by1.extend([(0, 'c'), (1, 'a'), (2, 'd'), (3, 'b')]);
     assert_eq!(soa, expected_by1);
 
-    // soa.sort_by2();
+    soa.sort_by2();
     let mut expected_by2 = Soa2::new();
     expected_by2.extend([(1, 'a'), (3, 'b'), (0, 'c'), (2, 'd')]);
     assert_eq!(soa, expected_by2);

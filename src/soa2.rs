@@ -190,6 +190,18 @@ impl<T1, T2> Soa2<T1, T2> {
         unsafe { self.v1.set_len(new_len) };
         unsafe { self.v2.set_len(new_len) };
     }
+
+    pub fn sort_by1(&mut self)
+    where
+        T1: Ord,
+    {
+    }
+
+    pub fn sort_by2(&mut self)
+    where
+        T2: Ord,
+    {
+    }
 }
 
 impl<T1, T2> From<Soa2<T1, T2>> for (Vec<T1>, Vec<T2>) {
