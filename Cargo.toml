@@ -10,13 +10,10 @@ keywords = ["vec", "array", "vector", "soa"]
 categories = ["data-structures", "algorithms", "no-std"]
 
 [dependencies]
-derive-new = { version = "0.7.0", default-features = false }
-orx-parallel = { git = "https://github.com/orxfun/orx-parallel", branch = "main", default-features = false }
+derive-new = { version = "0.7", default-features = false }
+orx-parallel = { version = "4.0", default-features = false }
 orx-priority-queue = { version = "1.9", default-features = false }
-# orx-soa-derive = { version = "1.2", default-features = false }
-orx-soa-derive = { path = "../orx-soa-derive" }
+orx-soa-derive = { version = "1.3", default-features = false }
 
 [dev-dependencies]
-orx-parallel = { git = "https://github.com/orxfun/orx-parallel", branch = "main", default-features = false, features = [
-    "std",
-] }
+orx-parallel = { version = "4.0", default-features = false, features = ["std"] }
