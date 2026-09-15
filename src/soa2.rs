@@ -205,6 +205,20 @@ impl<T1, T2> Soa2<T1, T2> {
         self.sort_by(|a, b| a.v2.cmp(b.v2));
     }
 
+    pub fn sort_unstable_by1(&mut self)
+    where
+        T1: Ord,
+    {
+        self.sort_by_unstable(|a, b| a.v1.cmp(b.v1));
+    }
+
+    pub fn sort_unstable_by2(&mut self)
+    where
+        T2: Ord,
+    {
+        self.sort_by_unstable(|a, b| a.v2.cmp(b.v2));
+    }
+
     fn sort_by<F>(&mut self, mut compare: F)
     where
         F: FnMut(ElemRef2<'_, T1, T2>, ElemRef2<'_, T1, T2>) -> core::cmp::Ordering,
@@ -240,6 +254,74 @@ impl<T1, T2> Soa2<T1, T2> {
                 self.v2.swap(index, other);
                 positions.swap(index, other);
             }
+        }
+    }
+
+    fn sort_by_unstable<F>(&mut self, mut compare: F)
+    where
+        F: FnMut(ElemRef2<'_, T1, T2>, ElemRef2<'_, T1, T2>) -> core::cmp::Ordering,
+    {
+        let len = self.len();
+        if len <= 1 {
+            return;
+        }
+
+        fn sift_down<T1, T2, F>(soa: &mut Soa2<T1, T2>, compare: &mut F, start: usize, end: usize)
+        where
+            F: FnMut(ElemRef2<'_, T1, T2>, ElemRef2<'_, T1, T2>) -> core::cmp::Ordering,
+        {
+            let mut root = start;
+
+            loop {
+                let left_child = 2 * root + 1;
+                if left_child >= end {
+                    break;
+                }
+
+                let mut child = left_child;
+                let right_child = left_child + 1;
+                if right_child < end {
+                    let left = ElemRef2 {
+                        v1: &soa.v1[left_child],
+                        v2: &soa.v2[left_child],
+                    };
+                    let right = ElemRef2 {
+                        v1: &soa.v1[right_child],
+                        v2: &soa.v2[right_child],
+                    };
+                    if compare(left, right).is_lt() {
+                        child = right_child;
+                    }
+                }
+
+                let root_ref = ElemRef2 {
+                    v1: &soa.v1[root],
+                    v2: &soa.v2[root],
+                };
+                let child_ref = ElemRef2 {
+                    v1: &soa.v1[child],
+                    v2: &soa.v2[child],
+                };
+
+                match compare(root_ref, child_ref).is_lt() {
+                    true => {
+                        soa.v1.swap(root, child);
+                        soa.v2.swap(root, child);
+                        root = child;
+                    }
+                    false => break,
+                }
+            }
+        }
+
+        for start in (0..len / 2).rev() {
+            sift_down(self, &mut compare, start, len);
+        }
+
+        for end in (1..len).rev() {
+            self.v1.swap(0, end);
+            self.v2.swap(0, end);
+            sift_down(self, &mut compare, 0, end);
         }
     }
 }

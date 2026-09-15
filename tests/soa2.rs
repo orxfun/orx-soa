@@ -94,3 +94,19 @@ fn soa2_sort() {
     expected_by2.extend([(1, 'a'), (3, 'b'), (0, 'c'), (2, 'd')]);
     assert_eq!(soa, expected_by2);
 }
+
+#[test]
+fn soa2_sort_unstable() {
+    let mut soa = Soa2::new();
+    soa.extend([(1, 'a'), (0, 'c'), (3, 'b'), (2, 'd')]);
+
+    soa.sort_unstable_by1();
+    let mut expected_by1_unstable = Soa2::new();
+    expected_by1_unstable.extend([(0, 'c'), (1, 'a'), (2, 'd'), (3, 'b')]);
+    assert_eq!(soa, expected_by1_unstable);
+
+    soa.sort_unstable_by2();
+    let mut expected_by2_unstable = Soa2::new();
+    expected_by2_unstable.extend([(1, 'a'), (3, 'b'), (0, 'c'), (2, 'd')]);
+    assert_eq!(soa, expected_by2_unstable);
+}
