@@ -1,5 +1,6 @@
 use alloc::{vec, vec::Vec};
-use orx_parallel::collectables::{ColAndPos, IdxLen, ParExtendCore, ThBegLen};
+use core::cmp::Ordering;
+use orx_parallel::extendable::{ColAndPos, IdxLen, ParExtendCore, ThBegLen};
 use orx_priority_queue::{BinaryHeap, PriorityQueue};
 
 /// Struct-of-arrays storage for pairs of values.
@@ -189,6 +190,240 @@ impl<T1, T2> Soa2<T1, T2> {
     pub unsafe fn set_len(&mut self, new_len: usize) {
         unsafe { self.v1.set_len(new_len) };
         unsafe { self.v2.set_len(new_len) };
+    }
+
+    /// Shortens the vectors in SOA, keeping the first len elements and dropping the rest.
+    ///
+    /// If len is greater or equal to the vectors' current length, this has no effect.
+    ///
+    /// Note that this method has no effect on the allocated capacity of the vectors.
+    pub fn truncate(&mut self, len: usize) {
+        self.v1.truncate(len);
+        self.v2.truncate(len);
+    }
+
+    /// Sorts the collection with a custom comparator.
+    ///
+    /// # Examples
+    /// ```
+    /// use orx_soa::soa2::Soa2;
+    ///
+    /// let mut soa = Soa2::new();
+    /// soa.push((2, 'b'));
+    /// soa.push((1, 'a'));
+    ///
+    /// soa.sort_by(|left, right| left.v1.cmp(right.v1));
+    ///
+    /// assert_eq!(soa.as_slice1(), &[1, 2]);
+    /// assert_eq!(soa.as_slice2(), &['a', 'b']);
+    /// ```
+    pub fn sort_by<F>(&mut self, mut compare: F)
+    where
+        F: FnMut(ElemRef2<'_, T1, T2>, ElemRef2<'_, T1, T2>) -> Ordering,
+    {
+        let len = self.len();
+        if len <= 1 {
+            return;
+        }
+
+        let mut indices: Vec<usize> = (0..len).collect();
+        indices.sort_by(|&left, &right| {
+            compare(
+                ElemRef2 {
+                    v1: &self.v1[left],
+                    v2: &self.v2[left],
+                },
+                ElemRef2 {
+                    v1: &self.v1[right],
+                    v2: &self.v2[right],
+                },
+            )
+        });
+
+        let mut positions = vec![0; len];
+        for (new_position, old_position) in indices.into_iter().enumerate() {
+            positions[old_position] = new_position;
+        }
+
+        for index in 0..len {
+            while positions[index] != index {
+                let other = positions[index];
+                self.v1.swap(index, other);
+                self.v2.swap(index, other);
+                positions.swap(index, other);
+            }
+        }
+    }
+
+    /// Sorts the collection by the first component.
+    ///
+    /// # Examples
+    /// ```
+    /// use orx_soa::soa2::Soa2;
+    ///
+    /// let mut soa = Soa2::new();
+    /// soa.push((2, 'b'));
+    /// soa.push((1, 'a'));
+    ///
+    /// soa.sort_by1();
+    ///
+    /// assert_eq!(soa.as_slice1(), &[1, 2]);
+    /// assert_eq!(soa.as_slice2(), &['a', 'b']);
+    /// ```
+    pub fn sort_by1(&mut self)
+    where
+        T1: Ord,
+    {
+        self.sort_by(|a, b| a.v1.cmp(b.v1));
+    }
+
+    /// Sorts the collection by the second component.
+    ///
+    /// # Examples
+    /// ```
+    /// use orx_soa::soa2::Soa2;
+    ///
+    /// let mut soa = Soa2::new();
+    /// soa.push((2, 'b'));
+    /// soa.push((1, 'a'));
+    ///
+    /// soa.sort_by2();
+    ///
+    /// assert_eq!(soa.as_slice1(), &[1, 2]);
+    /// assert_eq!(soa.as_slice2(), &['a', 'b']);
+    /// ```
+    pub fn sort_by2(&mut self)
+    where
+        T2: Ord,
+    {
+        self.sort_by(|a, b| a.v2.cmp(b.v2));
+    }
+
+    /// Sorts the collection with a custom comparator using an unstable sort.
+    ///
+    /// # Examples
+    /// ```
+    /// use orx_soa::soa2::Soa2;
+    ///
+    /// let mut soa = Soa2::new();
+    /// soa.push((2, 'b'));
+    /// soa.push((1, 'a'));
+    ///
+    /// soa.sort_by_unstable(|left, right| left.v1.cmp(right.v1));
+    ///
+    /// assert_eq!(soa.as_slice1(), &[1, 2]);
+    /// assert_eq!(soa.as_slice2(), &['a', 'b']);
+    /// ```
+    pub fn sort_by_unstable<F>(&mut self, mut compare: F)
+    where
+        F: FnMut(ElemRef2<'_, T1, T2>, ElemRef2<'_, T1, T2>) -> Ordering,
+    {
+        let len = self.len();
+        if len <= 1 {
+            return;
+        }
+
+        fn sift_down<T1, T2, F>(soa: &mut Soa2<T1, T2>, compare: &mut F, start: usize, end: usize)
+        where
+            F: FnMut(ElemRef2<'_, T1, T2>, ElemRef2<'_, T1, T2>) -> Ordering,
+        {
+            let mut root = start;
+
+            loop {
+                let left_child = 2 * root + 1;
+                if left_child >= end {
+                    break;
+                }
+
+                let mut child = left_child;
+                let right_child = left_child + 1;
+                if right_child < end {
+                    let left = ElemRef2 {
+                        v1: &soa.v1[left_child],
+                        v2: &soa.v2[left_child],
+                    };
+                    let right = ElemRef2 {
+                        v1: &soa.v1[right_child],
+                        v2: &soa.v2[right_child],
+                    };
+                    if compare(left, right).is_lt() {
+                        child = right_child;
+                    }
+                }
+
+                let root_ref = ElemRef2 {
+                    v1: &soa.v1[root],
+                    v2: &soa.v2[root],
+                };
+                let child_ref = ElemRef2 {
+                    v1: &soa.v1[child],
+                    v2: &soa.v2[child],
+                };
+
+                match compare(root_ref, child_ref).is_lt() {
+                    true => {
+                        soa.v1.swap(root, child);
+                        soa.v2.swap(root, child);
+                        root = child;
+                    }
+                    false => break,
+                }
+            }
+        }
+
+        for start in (0..len / 2).rev() {
+            sift_down(self, &mut compare, start, len);
+        }
+
+        for end in (1..len).rev() {
+            self.v1.swap(0, end);
+            self.v2.swap(0, end);
+            sift_down(self, &mut compare, 0, end);
+        }
+    }
+
+    /// Sorts the collection by the first component using an unstable sort.
+    ///
+    /// # Examples
+    /// ```
+    /// use orx_soa::soa2::Soa2;
+    ///
+    /// let mut soa = Soa2::new();
+    /// soa.push((2, 'b'));
+    /// soa.push((1, 'a'));
+    ///
+    /// soa.sort_unstable_by1();
+    ///
+    /// assert_eq!(soa.as_slice1(), &[1, 2]);
+    /// assert_eq!(soa.as_slice2(), &['a', 'b']);
+    /// ```
+    pub fn sort_unstable_by1(&mut self)
+    where
+        T1: Ord,
+    {
+        self.sort_by_unstable(|a, b| a.v1.cmp(b.v1));
+    }
+
+    /// Sorts the collection by the second component using an unstable sort.
+    ///
+    /// # Examples
+    /// ```
+    /// use orx_soa::soa2::Soa2;
+    ///
+    /// let mut soa = Soa2::new();
+    /// soa.push((2, 'b'));
+    /// soa.push((1, 'a'));
+    ///
+    /// soa.sort_unstable_by2();
+    ///
+    /// assert_eq!(soa.as_slice1(), &[1, 2]);
+    /// assert_eq!(soa.as_slice2(), &['a', 'b']);
+    /// ```
+    pub fn sort_unstable_by2(&mut self)
+    where
+        T2: Ord,
+    {
+        self.sort_by_unstable(|a, b| a.v2.cmp(b.v2));
     }
 }
 
