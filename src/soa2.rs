@@ -192,6 +192,16 @@ impl<T1, T2> Soa2<T1, T2> {
         unsafe { self.v2.set_len(new_len) };
     }
 
+    /// Shortens the vectors in SOA, keeping the first len elements and dropping the rest.
+    ///
+    /// If len is greater or equal to the vectors' current length, this has no effect.
+    ///
+    /// Note that this method has no effect on the allocated capacity of the vectors.
+    pub fn truncate(&mut self, len: usize) {
+        self.v1.truncate(len);
+        self.v2.truncate(len);
+    }
+
     /// Sorts the collection with a custom comparator.
     ///
     /// # Examples
