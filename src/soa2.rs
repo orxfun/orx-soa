@@ -1,4 +1,5 @@
 use alloc::{vec, vec::Vec};
+use core::cmp::Ordering;
 use orx_parallel::extendable::{ColAndPos, IdxLen, ParExtendCore, ThBegLen};
 use orx_priority_queue::{BinaryHeap, PriorityQueue};
 
@@ -191,37 +192,9 @@ impl<T1, T2> Soa2<T1, T2> {
         unsafe { self.v2.set_len(new_len) };
     }
 
-    pub fn sort_by1(&mut self)
+    pub fn sort_by<F>(&mut self, mut compare: F)
     where
-        T1: Ord,
-    {
-        self.sort_by(|a, b| a.v1.cmp(b.v1));
-    }
-
-    pub fn sort_by2(&mut self)
-    where
-        T2: Ord,
-    {
-        self.sort_by(|a, b| a.v2.cmp(b.v2));
-    }
-
-    pub fn sort_unstable_by1(&mut self)
-    where
-        T1: Ord,
-    {
-        self.sort_by_unstable(|a, b| a.v1.cmp(b.v1));
-    }
-
-    pub fn sort_unstable_by2(&mut self)
-    where
-        T2: Ord,
-    {
-        self.sort_by_unstable(|a, b| a.v2.cmp(b.v2));
-    }
-
-    fn sort_by<F>(&mut self, mut compare: F)
-    where
-        F: FnMut(ElemRef2<'_, T1, T2>, ElemRef2<'_, T1, T2>) -> core::cmp::Ordering,
+        F: FnMut(ElemRef2<'_, T1, T2>, ElemRef2<'_, T1, T2>) -> Ordering,
     {
         let len = self.len();
         if len <= 1 {
@@ -257,9 +230,23 @@ impl<T1, T2> Soa2<T1, T2> {
         }
     }
 
-    fn sort_by_unstable<F>(&mut self, mut compare: F)
+    pub fn sort_by1(&mut self)
     where
-        F: FnMut(ElemRef2<'_, T1, T2>, ElemRef2<'_, T1, T2>) -> core::cmp::Ordering,
+        T1: Ord,
+    {
+        self.sort_by(|a, b| a.v1.cmp(b.v1));
+    }
+
+    pub fn sort_by2(&mut self)
+    where
+        T2: Ord,
+    {
+        self.sort_by(|a, b| a.v2.cmp(b.v2));
+    }
+
+    pub fn sort_by_unstable<F>(&mut self, mut compare: F)
+    where
+        F: FnMut(ElemRef2<'_, T1, T2>, ElemRef2<'_, T1, T2>) -> Ordering,
     {
         let len = self.len();
         if len <= 1 {
@@ -268,7 +255,7 @@ impl<T1, T2> Soa2<T1, T2> {
 
         fn sift_down<T1, T2, F>(soa: &mut Soa2<T1, T2>, compare: &mut F, start: usize, end: usize)
         where
-            F: FnMut(ElemRef2<'_, T1, T2>, ElemRef2<'_, T1, T2>) -> core::cmp::Ordering,
+            F: FnMut(ElemRef2<'_, T1, T2>, ElemRef2<'_, T1, T2>) -> Ordering,
         {
             let mut root = start;
 
@@ -323,6 +310,20 @@ impl<T1, T2> Soa2<T1, T2> {
             self.v2.swap(0, end);
             sift_down(self, &mut compare, 0, end);
         }
+    }
+
+    pub fn sort_unstable_by1(&mut self)
+    where
+        T1: Ord,
+    {
+        self.sort_by_unstable(|a, b| a.v1.cmp(b.v1));
+    }
+
+    pub fn sort_unstable_by2(&mut self)
+    where
+        T2: Ord,
+    {
+        self.sort_by_unstable(|a, b| a.v2.cmp(b.v2));
     }
 }
 
