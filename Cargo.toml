@@ -1,10 +1,21 @@
 [package]
 name = "orx-soa"
-version = "0.1.0"
+version = "1.0.0"
 edition = "2024"
-publish = ["artifactory"]
+authors = ["orxfun <orx.ugur.arikan@gmail.com>"]
+description = "Struct of arrays collections"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/orxfun/orx-soa/"
+keywords = ["vec", "array", "vector", "soa"]
+categories = ["data-structures", "algorithms", "no-std"]
 
 [dependencies]
-orx-parallel = { git = "https://github.com/orxfun/orx-parallel", branch = "collect-into-soa" }
+derive-new = { version = "0.7.0", default-features = false }
+orx-parallel = { git = "https://github.com/orxfun/orx-parallel", branch = "collect-into-soa", default-features = false }
 orx-priority-queue = { version = "1.9", default-features = false }
-orx-soa-derive = { version = "1.0", default-features = false }
+orx-soa-derive = { version = "1.2", default-features = false }
+
+[dev-dependencies]
+orx-parallel = { git = "https://github.com/orxfun/orx-parallel", branch = "collect-into-soa", default-features = false, features = [
+    "std",
+] }

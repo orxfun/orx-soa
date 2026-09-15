@@ -14,9 +14,7 @@
 
 extern crate alloc;
 
-#[cfg(test)]
-extern crate std;
-
+/// Struct of arrays for tuples of two items.
 pub mod soa2;
 
 pub use orx_soa_derive::Soa;
