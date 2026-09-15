@@ -11,11 +11,12 @@ categories = ["data-structures", "algorithms", "no-std"]
 
 [dependencies]
 derive-new = { version = "0.7.0", default-features = false }
-orx-parallel = { git = "https://github.com/orxfun/orx-parallel", branch = "collect-into-soa", default-features = false }
+orx-parallel = { git = "https://github.com/orxfun/orx-parallel", branch = "main", default-features = false }
 orx-priority-queue = { version = "1.9", default-features = false }
-orx-soa-derive = { version = "1.2", default-features = false }
+# orx-soa-derive = { version = "1.2", default-features = false }
+orx-soa-derive = { path = "../orx-soa-derive" }
 
 [dev-dependencies]
-orx-parallel = { git = "https://github.com/orxfun/orx-parallel", branch = "collect-into-soa", default-features = false, features = [
+orx-parallel = { git = "https://github.com/orxfun/orx-parallel", branch = "main", default-features = false, features = [
     "std",
 ] }

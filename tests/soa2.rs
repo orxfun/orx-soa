@@ -1,4 +1,4 @@
-use orx_parallel::collectables::ParExtendCore;
+use orx_parallel::extendable::ParExtendCore;
 use orx_soa::soa2::*;
 
 #[test]

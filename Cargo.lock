@@ -159,7 +159,7 @@ dependencies = [
 [[package]]
 name = "orx-parallel"
 version = "3.4.0"
-source = "git+https://github.com/orxfun/orx-parallel?branch=collect-into-soa#ee4c3975684d9df1b3d76489ccddddcbcb5a54d0"
+source = "git+https://github.com/orxfun/orx-parallel?branch=main#33177d192e8821a99a0d53b92b389ac815b5c41f"
 dependencies = [
  "js-sys",
  "orx-concurrent-bag",
@@ -228,9 +228,7 @@ dependencies = [
 
 [[package]]
 name = "orx-soa-derive"
-version = "1.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "21655915dc490afd572f5fb470ebdbf1962d4d7fa5fa20b8c8a09c2073fefd39"
+version = "1.3.0"
 dependencies = [
  "quote",
  "syn 2.0.119",

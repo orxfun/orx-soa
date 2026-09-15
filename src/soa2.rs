@@ -1,5 +1,5 @@
 use alloc::{vec, vec::Vec};
-use orx_parallel::collectables::{ColAndPos, IdxLen, ParExtendCore, ThBegLen};
+use orx_parallel::extendable::{ColAndPos, IdxLen, ParExtendCore, ThBegLen};
 use orx_priority_queue::{BinaryHeap, PriorityQueue};
 
 /// Struct-of-arrays storage for pairs of values.
