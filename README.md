@@ -66,6 +66,10 @@ assert_eq!(chars, vec!['a', 'b']);
 
 Contributions are welcome! If you notice an error, have a question or think something could be improved, please open an [issue](https://github.com/orxfun/orx-soa/issues/new) or create a PR.
 
+### Api Design
+
+The target design is to have an api for SOA types, such as `Soa2`, to be as close as possible to the standard `Vec`. The goal is also to cover as much vector functionalities as possible. Contributions to fill this gap are very wellcome, as well as, contributions to extend SOA-specific functionalities.
+
 ## License
 
 Dual-licensed under [Apache 2.0](LICENSE-APACHE) or [MIT](LICENSE-MIT).
