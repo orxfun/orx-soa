@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.1](https://github.com/orxfun/orx-soa/compare/v1.0.0...v1.0.1) - 2026-09-16
+
+### Fixed
+
+- add api design subsection under contribution ([#5](https://github.com/orxfun/orx-soa/pull/5))
+
+### Other
+
+- Enable manual triggering for release workflow ([#4](https://github.com/orxfun/orx-soa/pull/4))
+
 ## [1.0.0](https://github.com/orxfun/orx-soa/releases/tag/v1.0.0) - 2026-09-15
 
 ### Added

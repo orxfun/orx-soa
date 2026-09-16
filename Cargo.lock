@@ -219,7 +219,7 @@ checksum = "67a8e35dfe18921e475b9861266fd58a5ecfd681161f242d24a9e2d1e07fbc28"
 
 [[package]]
 name = "orx-soa"
-version = "1.0.0"
+version = "1.0.1"
 dependencies = [
  "derive-new",
  "orx-parallel",
